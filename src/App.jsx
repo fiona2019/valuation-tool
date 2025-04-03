@@ -50,8 +50,19 @@ export default function App() {
   const investorOwnership = (investorShares / totalShares) * 100;
 
   return (
-    <div style={{ fontFamily: 'Segoe UI, sans-serif', backgroundColor: '#f9fafb', color: '#1f2937', minHeight: '100vh', padding: '24px' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div
+      style={{
+        fontFamily: 'Segoe UI, sans-serif',
+        backgroundColor: '#f9fafb',
+        color: '#1f2937',
+        minHeight: '100vh',
+        padding: '24px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'start'
+      }}
+    >
+      <div style={{ width: '100%', maxWidth: '1000px' }}>
         <h1 style={{ fontSize: '28px', marginBottom: '24px' }}>📊 股权稀释 & 增值计算器（含 ESOP + 跟投）</h1>
 
         <Card>
