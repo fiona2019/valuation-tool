@@ -7,7 +7,7 @@ export default function App() {
   const [investment, setInvestment] = useState('');
   const [followOnInvestment, setFollowOnInvestment] = useState('');
   const [esopPct, setEsopPct] = useState('');
-  const [esopTiming, setEsopTiming] = useState('post');
+  const [esopTiming, setEsopTiming] = useState('post'); // 'pre' or 'post'
   const [showDetails, setShowDetails] = useState(false);
 
   const followOn = Number(followOnInvestment);
@@ -50,17 +50,8 @@ export default function App() {
   const investorOwnership = (investorShares / totalShares) * 100;
 
   return (
-    <div style={{
-      fontFamily: 'Segoe UI, sans-serif',
-      backgroundColor: '#f9fafb',
-      color: '#1f2937',
-      minHeight: '100vh',
-      padding: '24px',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'start'
-    }}>
-      <div style={{ width: '100%', maxWidth: '1000px' }}>
+    <div style={{ fontFamily: 'Segoe UI, sans-serif', backgroundColor: '#f9fafb', color: '#1f2937', minHeight: '100vh', padding: '24px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '28px', marginBottom: '24px' }}>📊 股权稀释 & 增值计算器（含 ESOP + 跟投）</h1>
 
         <Card>
@@ -76,14 +67,7 @@ export default function App() {
             <select
               value={esopTiming}
               onChange={(e) => setEsopTiming(e.target.value)}
-              style={{
-                padding: '8px',
-                width: '100%',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                backgroundColor: '#fff',
-                color: '#1f2937'
-              }}
+              style={{ padding: '8px', width: '100%', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: '#fff', color: '#1f2937' }}
             >
               <option value="pre">投前增发</option>
               <option value="post">投后增发</option>
@@ -102,15 +86,7 @@ export default function App() {
 
             <button
               onClick={() => setShowDetails(!showDetails)}
-              style={{
-                marginTop: '12px',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                background: '#f0f0f0',
-                color: '#1f2937',
-                cursor: 'pointer'
-              }}
+              style={{ marginTop: '12px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#f0f0f0', color: '#1f2937', cursor: 'pointer' }}
             >
               {showDetails ? '隐藏计算明细' : '显示计算明细'}
             </button>
@@ -139,14 +115,7 @@ function Input({ label, value, onChange }) {
         type="number"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{
-          padding: '8px',
-          width: '100%',
-          borderRadius: '6px',
-          border: '1px solid #ccc',
-          backgroundColor: '#ffffff',
-          color: '#1f2937'
-        }}
+        style={{ padding: '8px', width: '100%', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: '#ffffff', color: '#1f2937' }}
       />
     </div>
   );
@@ -154,14 +123,7 @@ function Input({ label, value, onChange }) {
 
 function Card({ children }) {
   return (
-    <div style={{
-      padding: '20px',
-      background: '#ffffff',
-      borderRadius: '10px',
-      border: '1px solid #e5e7eb',
-      marginBottom: '20px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-    }}>
+    <div style={{ padding: '20px', background: '#ffffff', borderRadius: '10px', border: '1px solid #e5e7eb', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
       {children}
     </div>
   );
@@ -169,15 +131,7 @@ function Card({ children }) {
 
 function ResultBox({ children }) {
   return (
-    <div style={{
-      marginTop: '20px',
-      padding: '16px',
-      background: '#f1f5f9',
-      borderRadius: '10px',
-      lineHeight: '1.6',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-      color: '#1f2937'
-    }}>
+    <div style={{ marginTop: '20px', padding: '16px', background: '#f1f5f9', borderRadius: '10px', lineHeight: '1.6', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', color: '#1f2937' }}>
       {children}
     </div>
   );
