@@ -1,83 +1,120 @@
 import { useState } from 'react';
 
 export default function App() {
-  // 股权稀释模块
-  const [oldOwnership, setOldOwnership] = useState('');
+  const [historyValuation, setHistoryValuation] = useState('');
+  const [initialHoldPct, setInitialHoldPct] = useState('');
   const [preMoney, setPreMoney] = useState('');
   const [investment, setInvestment] = useState('');
+  const [followOnInvestment, setFollowOnInvestment] = useState('');
+  const [esopPct, setEsopPct] = useState('');
+  const [esopTiming, setEsopTiming] = useState('post'); // 'pre' or 'post'
+  const [showDetails, setShowDetails] = useState(false);
 
-  const postMoney = Number(preMoney) + Number(investment);
-  const newOwnership = (
-    (oldOwnership * preMoney) /
-    postMoney
-  ).toFixed(2);
-  const dilution = (oldOwnership - newOwnership).toFixed(2);
-  const equityValue = ((postMoney * newOwnership) / 100).toFixed(2);
+  const followOn = Number(followOnInvestment);
+  const totalInvestment = Number(investment);
+  const esopRatio = Number(esopPct) / 100;
+  const postMoney = Number(preMoney) + totalInvestment;
 
-  // 股权增值模块
-  const [initialValuation, setInitialValuation] = useState('');
-  const [currentValuation, setCurrentValuation] = useState('');
-  const [initialHoldPct, setInitialHoldPct] = useState('');
+  let baseShares = 0;
+  let newShares = totalInvestment;
+  let totalShares = 0;
+  let initialShares = 0;
+  let pricePerShare = 0;
+  let followOnShares = 0;
 
-  const initialValue = (
-    (initialValuation * initialHoldPct) /
-    100
-  ).toFixed(2);
+  if (esopTiming === 'pre') {
+    // 投前增发：ESOP 完全由老股东稀释，投资人不被稀释
+    baseShares = 100;
+    pricePerShare = Number(preMoney) / baseShares;
 
-  const currentValue = (
-    (currentValuation * newOwnership) /
-    100
-  ).toFixed(2);
+    // 老股东股份整体乘以 (1 - esopRatio)
+    const adjustedHoldPct = Number(initialHoldPct) * (1 - esopRatio);
+    initialShares = (adjustedHoldPct / 100) * baseShares;
 
+    followOnShares = followOn / pricePerShare;
+    newShares = totalInvestment / pricePerShare;
+    totalShares = baseShares + newShares;
+  } else {
+    // 投后增发：融资后 cap table 引入 ESOP，所有人一起稀释
+    baseShares = 100;
+    pricePerShare = Number(preMoney) / baseShares;
+    newShares = totalInvestment / pricePerShare;
+
+    const postInvestmentShares = baseShares + newShares;
+    totalShares = postInvestmentShares / (1 - esopRatio);
+
+    // 股份数不变，比例稀释由 totalShares 增加体现
+    initialShares = (Number(initialHoldPct) / 100) * baseShares;
+    followOnShares = followOn / pricePerShare;
+    // 投后增发：融资完成后再增发 → cap table 先扩大
+    
+  }
+
+  const newOwnership = ((initialShares + followOnShares) / totalShares) * 100;
+  const initialValue = ((Number(historyValuation) * Number(initialHoldPct)) / 100).toFixed(2);
+  const currentValue = ((postMoney * newOwnership) / 100).toFixed(2);
   const gainAmount = (currentValue - initialValue).toFixed(2);
-  const gainPct = (
-    ((currentValue - initialValue) / initialValue) *
-    100
-  ).toFixed(2);
+  const gainPct = (((currentValue - initialValue) / initialValue) * 100).toFixed(2);
+
+  const investorShares = newShares - followOnShares;
+  const investorOwnership = (investorShares / totalShares) * 100;
 
   return (
     <div style={{ fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto', padding: '24px' }}>
-      <h1 style={{ fontSize: '28px', marginBottom: '20px' }}>📊 Quick Valuation Tool</h1>
+      <h1 style={{ fontSize: '28px', marginBottom: '24px' }}>📊 股权稀释 & 增值计算器（含 ESOP + 跟投）</h1>
 
-      {/* 折叠模块 1 */}
-      <details open style={accordionStyle}>
-        <summary style={summaryStyle}>📉 股权稀释计算器</summary>
-        <div style={panelStyle}>
-          <Input label="老股东初始持股比例（%）" value={oldOwnership} onChange={setOldOwnership} />
-          <Input label="投资前估值（万元）" value={preMoney} onChange={setPreMoney} />
-          <Input label="本轮新增投资金额（万元）" value={investment} onChange={setInvestment} />
+      <Card>
+        <Input label="历史轮估值（万元）" value={historyValuation} onChange={setHistoryValuation} />
+        <Input label="初始持股比例（%）" value={initialHoldPct} onChange={setInitialHoldPct} />
+        <Input label="本轮 Pre-money 估值（万元）" value={preMoney} onChange={setPreMoney} />
+        <Input label="本轮投资总金额（万元）" value={investment} onChange={setInvestment} />
+        <Input label="其中老股东跟投金额（万元）" value={followOnInvestment} onChange={setFollowOnInvestment} />
+        <Input label="ESOP 占比（%）" value={esopPct} onChange={setEsopPct} />
 
-          <ResultBox>
-            <p>👉 投资后公司估值：<strong>{postMoney || 0} 万元</strong></p>
-            <p>📉 老股东新持股比例：<strong>{newOwnership || 0} %</strong></p>
-            <p>📉 股权被稀释比例：<strong>{dilution || 0} %</strong></p>
-            <p>💰 当前股权价值：<strong>{equityValue || 0} 万元</strong></p>
-          </ResultBox>
+        <div style={{ marginBottom: '16px' }}>
+          <label>ESOP 增发时点：</label><br />
+          <select
+            value={esopTiming}
+            onChange={(e) => setEsopTiming(e.target.value)}
+            style={{ padding: '8px', width: '100%', borderRadius: '6px', border: '1px solid #ccc' }}
+          >
+            <option value="pre">投前增发</option>
+            <option value="post">投后增发</option>
+          </select>
         </div>
-      </details>
 
-      {/* 折叠模块 2 */}
-      <details style={accordionStyle}>
-        <summary style={summaryStyle}>📈 股权增值计算器</summary>
-        <div style={panelStyle}>
-          <Input label="投资时企业估值（万元）" value={initialValuation} onChange={setInitialValuation} />
-          <Input label="当前企业估值（万元）" value={currentValuation} onChange={setCurrentValuation} />
-          <Input label="初始持股比例（%）" value={initialHoldPct} onChange={setInitialHoldPct} />
+        <ResultBox>
+          <p>💰 投资后估值（Post-money）：<strong>{postMoney || 0} 万元</strong></p>
+          <p>📉 稀释后持股比例（含ESOP）：<strong>{newOwnership.toFixed(2)}%</strong></p>
+          <p>🏦 新投资人持股比例：<strong>{investorOwnership.toFixed(2)}%</strong></p>
+          <hr />
+          <p>💼 初始股权价值：<strong>{initialValue} 万元</strong></p>
+          <p>📊 当前股权价值：<strong>{currentValue} 万元</strong></p>
+          <p>📈 增值金额：<strong>{gainAmount} 万元</strong></p>
+          <p>📈 增值比例：<strong>{isNaN(gainPct) ? 0 : gainPct} %</strong></p>
 
-          <ResultBox>
-            <p>📉 当前持股比例（自动带入）：<strong>{newOwnership || 0} %</strong></p>
-            <p>💼 初始股权价值：<strong>{initialValue || 0} 万元</strong></p>
-            <p>📊 当前股权价值：<strong>{currentValue || 0} 万元</strong></p>
-            <p>💹 股权增值金额：<strong>{gainAmount || 0} 万元</strong></p>
-            <p>📈 股权增值比例：<strong>{isNaN(gainPct) ? 0 : gainPct} %</strong></p>
-          </ResultBox>
-        </div>
-      </details>
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            style={{ marginTop: '12px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#f0f0f0', cursor: 'pointer' }}
+          >
+            {showDetails ? '隐藏计算明细' : '显示计算明细'}
+          </button>
+
+          {showDetails && (
+            <div style={{ marginTop: '16px', fontSize: '14px', color: '#444' }}>
+              <p>🧮 每股价格：<strong>{pricePerShare.toFixed(2)} 元</strong></p>
+              <p>📦 初始股份数：<strong>{initialShares.toFixed(2)} 份</strong></p>
+              <p>➕ 老股东跟投股份数：<strong>{followOnShares.toFixed(2)} 份</strong></p>
+              <p>🆕 新增股份总数：<strong>{newShares.toFixed(2)} 份</strong></p>
+              <p>📈 总股份数：<strong>{totalShares.toFixed(2)} 份</strong></p>
+            </div>
+          )}
+        </ResultBox>
+      </Card>
     </div>
   );
 }
 
-// 可复用组件：输入框
 function Input({ label, value, onChange }) {
   return (
     <div style={{ marginBottom: '12px' }}>
@@ -86,48 +123,24 @@ function Input({ label, value, onChange }) {
         type="number"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{
-          padding: '8px',
-          width: '100%',
-          borderRadius: '6px',
-          border: '1px solid #ccc',
-        }}
+        style={{ padding: '8px', width: '100%', borderRadius: '6px', border: '1px solid #ccc' }}
       />
     </div>
   );
 }
 
-// 可复用组件：结果展示框
-function ResultBox({ children }) {
+function Card({ children }) {
   return (
-    <div style={{
-      background: '#f1f5f9',
-      padding: '16px',
-      borderRadius: '10px',
-      lineHeight: '1.6',
-    }}>
+    <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
       {children}
     </div>
   );
 }
 
-// 样式
-const accordionStyle = {
-  marginBottom: '24px',
-  border: '1px solid #ddd',
-  borderRadius: '8px',
-  overflow: 'hidden',
-};
-
-const summaryStyle = {
-  background: '#e2e8f0',
-  padding: '12px 16px',
-  cursor: 'pointer',
-  fontSize: '18px',
-  fontWeight: 'bold',
-};
-
-const panelStyle = {
-  padding: '16px',
-  background: '#ffffff',
-};
+function ResultBox({ children }) {
+  return (
+    <div style={{ marginTop: '20px', padding: '16px', background: '#ffffff', borderRadius: '10px', lineHeight: '1.6', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+      {children}
+    </div>
+  );
+}
