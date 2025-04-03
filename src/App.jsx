@@ -58,11 +58,12 @@ export default function App() {
         minHeight: '100vh',
         padding: '24px',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center'
+        justifyContent: 'center',
+        alignItems: 'start',
+        width:'100vw'
       }}
     >
-      <div style={{ width: '100%', maxWidth: '1000px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ width: '100%', maxWidth: '1000px', flexGrow: 1 }}>
         <h1 style={{ fontSize: '28px', marginBottom: '24px' }}>📊 股权稀释 & 增值计算器（含 ESOP + 跟投）</h1>
 
         <Card>
