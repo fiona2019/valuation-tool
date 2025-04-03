@@ -51,17 +51,7 @@ export default function App() {
 
   return (
     <div
-      style={{
-        fontFamily: 'Segoe UI, sans-serif',
-        backgroundColor: '#f9fafb',
-        color: '#1f2937',
-        minHeight: '100vh',
-        padding: '24px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'start',
-        width:'100vw'
-      }}
+      style={{ fontFamily: 'Segoe UI, sans-serif', backgroundColor: '#f9fafb', color: '#1f2937', minHeight: '100dvh', padding: '24px', display: 'flex', justifyContent: 'center', alignItems: 'start', width: '100vw' }}
     >
       <div style={{ width: '100%', maxWidth: '1000px', flexGrow: 1 }}>
         <h1 style={{ fontSize: '28px', marginBottom: '24px' }}>📊 股权稀释 & 增值计算器（含 ESOP + 跟投）</h1>
@@ -120,18 +110,34 @@ export default function App() {
 }
 
 function Input({ label, value, onChange }) {
+  const handleChange = (e) => {
+    const val = e.target.value;
+    // 校验规则：只允许正数，最多4位小数
+    if (/^\d*\.?\d{0,4}$/.test(val) || val === '') {
+      onChange(val);
+    }
+  };
+
   return (
     <div style={{ marginBottom: '12px' }}>
       <label style={{ display: 'block', marginBottom: '4px', color: '#1f2937' }}>{label}</label>
       <input
-        type="number"
+        type="text"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={{ padding: '8px', width: '100%', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: '#ffffff', color: '#1f2937' }}
+        onChange={handleChange}
+        style={{
+          padding: '8px',
+          width: '100%',
+          borderRadius: '6px',
+          border: '1px solid #ccc',
+          backgroundColor: '#ffffff',
+          color: '#1f2937'
+        }}
       />
     </div>
   );
 }
+
 
 function Card({ children }) {
   return (
